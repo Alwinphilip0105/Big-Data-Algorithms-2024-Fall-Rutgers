@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import '../App.css';
 import data from './questions.json';
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000').replace(/\/$/, '');
-
 const Question = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [rating, setRating] = useState(0);
@@ -12,16 +10,6 @@ const Question = () => {
   const navigate = useNavigate();
 
   const personalityTestQuestions = data.personalityTestQuestions;
-
-  const toRadarScores = (updatedAnswers) => {
-    const scaled = updatedAnswers.map(({ rating: score }) => {
-      const numericScore = Number(score);
-      const normalized = Number.isFinite(numericScore) ? Math.max(0, Math.min(10, numericScore)) : 0;
-      return normalized * 100;
-    });
-
-    return [...scaled, ...new Array(Math.max(0, 22 - scaled.length)).fill(0)].slice(0, 22);
-  };
 
   // Handle empty or missing questions
   if (!personalityTestQuestions || personalityTestQuestions.length === 0) {
@@ -48,13 +36,12 @@ const Question = () => {
       ...answers,
       { question: personalityTestQuestions[currentQuestionIndex].question, rating },
     ];
-    const fallbackFinalScores = toRadarScores(updatedAnswers);
     
     console.log('Submitting answers:', updatedAnswers); // Log the updated answers
     
     // Send the updatedAnswers array to the Node.js server
     try {
-      const response = await fetch(`${API_BASE_URL}/data`, {
+      const response = await fetch('http://localhost:3000/data', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,7 +51,6 @@ const Question = () => {
   
       if (!response.ok) {
         console.error('Failed to send answers to the server');
-        navigate('/chart', { state: { finalScores: fallbackFinalScores } });
       } else {
         const responseData = await response.json(); // Parse the JSON response
         console.log("Data from Node ==>>"+JSON.stringify(responseData, null, 2));
@@ -80,32 +66,31 @@ const Question = () => {
         const occupational_groups = responseData.occupational_groups;
         const skill_data = responseData.skill_data;
         const skill_column = responseData.skill_column;
-        const finalScores = Array.isArray(responseData.final_scores)
-          ? [...responseData.final_scores.map(score => Number(score) * 100), ...new Array(22).fill(0)].slice(0, 22)
-          : fallbackFinalScores;
-
-        if (!Array.isArray(responseData.final_scores)) {
-          console.error('final_scores not found in the server response. Using fallback scores from form input.');
+        if (responseData.final_scores) {
+          const finalScores = responseData.final_scores.map(score => score * 100); // Multiply scores by 100
+          console.log('Final scores:', finalScores);
+  
+          // Pass the data as state during navigation
+        navigate('/chart', { 
+            state: { 
+              finalScores, 
+              edu_categories, 
+              edu_values_2019_scaled, 
+              edu_values_2023_scaled, 
+              occ_title, 
+              a_median_2019, 
+              a_median_2023, 
+              occupational_groups, 
+              skill_data,
+              skill_column 
+            } 
+          });
+        } else {
+          console.error('final_scores not found in the server response.');
         }
-
-        navigate('/chart', {
-          state: {
-            finalScores,
-            edu_categories,
-            edu_values_2019_scaled,
-            edu_values_2023_scaled,
-            occ_title,
-            a_median_2019,
-            a_median_2023,
-            occupational_groups,
-            skill_data,
-            skill_column
-          }
-        });
       }
     } catch (error) {
       console.error('Error sending answers:', error);
-      navigate('/chart', { state: { finalScores: fallbackFinalScores } });
     }
   };
   

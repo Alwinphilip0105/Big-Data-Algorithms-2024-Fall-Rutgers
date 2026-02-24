@@ -1,33 +1,15 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const WebSocket = require("ws");
-const cors = require('cors');
 
 const app = express();
-const port = Number(process.env.PORT) || 3000;
-const allowedOrigins = (process.env.FRONTEND_ORIGINS || process.env.FRONTEND_ORIGIN || '')
-    .split(',')
-    .map((origin) => origin.trim())
-    .filter(Boolean);
-
-const corsOptions = {
-    origin: (origin, callback) => {
-        if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
-            callback(null, true);
-            return;
-        }
-        callback(new Error(`CORS blocked for origin: ${origin}`));
-    },
-};
+const port = 3000;
 
 // Middleware to parse JSON requests
 app.use(bodyParser.json());
 
-app.use(cors(corsOptions));
-
-app.get('/health', (_req, res) => {
-    res.status(200).json({ status: 'ok' });
-});
+const cors = require('cors');
+app.use(cors());
 
 // WebSocket server
 const wss = new WebSocket.Server({ noServer: true });
@@ -48,9 +30,7 @@ wss.on("connection", (ws) => {
             const data = JSON.parse(message);
             console.log("Data from Python ==>>"+JSON.stringify(data, null, 2));
             
-            if (!ws.pendingResponse) {
-                return;
-            }
+            
                 // Send the final_scores as the response to the pending POST request
                 ws.pendingResponse.status(200).send(data);
                 ws.pendingResponse = null; // Clear the pending response
@@ -94,10 +74,7 @@ app.post("/data", (req, res) => {
 
 // Start HTTP and WebSocket server
 const server = app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-    if (allowedOrigins.length > 0) {
-        console.log(`CORS allowlist: ${allowedOrigins.join(', ')}`);
-    }
+    console.log(`Server is running on http://localhost:${port}`);
 });
 
 server.on("upgrade", (request, socket, head) => {
