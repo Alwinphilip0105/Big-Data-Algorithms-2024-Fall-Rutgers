@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: big-data-algorithms-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: FRONTEND_ORIGINS
+        sync: false

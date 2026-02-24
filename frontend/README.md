@@ -1,8 +1,40 @@
-# React + Vite
+# Frontend (Vite + React)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Local development
 
-Currently, two official plugins are available:
+1. Create env file from example:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+copy .env.example .env
+```
+
+2. Set API URL in `.env`:
+
+```bash
+VITE_API_BASE_URL=http://localhost:3000
+```
+
+3. Install and run:
+
+```bash
+npm install
+npm run dev
+```
+
+## Build
+
+```bash
+npm run build
+npm run preview
+```
+
+## GitHub Pages deployment
+
+- Automated deployment uses repository workflow [deploy-frontend-pages.yml](../.github/workflows/deploy-frontend-pages.yml).
+- Before deploying, set GitHub repository variable `VITE_API_BASE_URL` to your hosted backend URL.
+
+Optional manual deployment:
+
+```bash
+npm run deploy
+```
