@@ -344,7 +344,7 @@ const nOcc = occ_title.length;
           )}
         </div>
 
-        <div className="chartContainer" style={{width: '90vw'}}>
+        <div className="chartContainer">
           <div className="chartCard mainRadarCard">
             <h3>Career fit: Final scores vs focused recommendation</h3>
             {useDemoMainScores && <span className="chartBadge">Sample scores — complete the questionnaire for your results</span>}
