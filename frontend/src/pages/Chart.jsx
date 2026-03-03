@@ -29,15 +29,31 @@ const DEMO_SKILL_DATA = [
     [0.4, 0.5, 0.4, 0.95, 0.9, 0.3, 0.6, 0.9, 0.6, 0.5, 0.95, 0.6, 0.4, 0.8, 0.7, 0.65],
 ];
 
+// Sample scores for main radar when user hasn't completed questionnaire (so chart is never empty)
+const DEMO_FINAL_SCORES = [820, 780, 900, 650, 580, 720, 880, 710, 690, 750, 620, 540, 480, 510, 590, 670, 730, 410, 550, 600, 520, 610];
+
 function isMissingOrEmpty(arr, placeholder) {
     if (!Array.isArray(arr) || arr.length === 0) return true;
     if (placeholder === 'No Data') return arr.every((v) => v === 'No Data' || v == null);
-    return arr.every((v) => v === 0 || v == null);
+    return arr.every((v) => Number(v) === 0 || v == null);
+}
+
+function toNumbers(arr, fallback = 0) {
+    if (!Array.isArray(arr)) return [];
+    return arr.map((v) => (v != null && v !== '' ? Number(v) : fallback));
 }
 
 const ChartPage = () => {
     const location = useLocation();
-    const finalScores = location.state?.finalScores || new Array(22).fill(0); // Fallback to zeros if data is missing
+    const hasState = location.state != null && Object.keys(location.state).length > 0;
+
+    const rawFinalScores = location.state?.finalScores || new Array(22).fill(0);
+    const finalScoresAllZero = rawFinalScores.length > 0 && rawFinalScores.every((v) => Number(v) === 0);
+    const useDemoMainScores = !hasState || finalScoresAllZero;
+    const finalScores = useDemoMainScores
+        ? DEMO_FINAL_SCORES.slice(0, 22)
+        : toNumbers(rawFinalScores.slice(0, 22), 0);
+    while (finalScores.length < 22) finalScores.push(0);
 
     const rawEduCategories = location.state?.edu_categories || new Array(8).fill('No Data');
     const rawEdu2019 = location.state?.edu_values_2019_scaled || new Array(8).fill(0);
@@ -54,19 +70,19 @@ const ChartPage = () => {
         new Array(16).fill(0),
     ];
 
-    const useDemoEducation = isMissingOrEmpty(rawEduCategories, 'No Data') || isMissingOrEmpty(rawEdu2019);
-    const useDemoOccupation = isMissingOrEmpty(rawOccTitle, 'No Data') || isMissingOrEmpty(rawMedian2019);
-    const useDemoSkills = rawSkillData.every((row) => isMissingOrEmpty(row));
+    const useDemoEducation = !hasState || isMissingOrEmpty(rawEduCategories, 'No Data') || isMissingOrEmpty(rawEdu2019);
+    const useDemoOccupation = !hasState || isMissingOrEmpty(rawOccTitle, 'No Data') || isMissingOrEmpty(rawMedian2019);
+    const useDemoSkills = !hasState || rawSkillData.every((row) => isMissingOrEmpty(row));
 
     const edu_categories = useDemoEducation ? DEMO_EDU_CATEGORIES : rawEduCategories;
-    const edu_values_2019_scaled = useDemoEducation ? DEMO_EDU_2019 : rawEdu2019;
-    const edu_values_2023_scaled = useDemoEducation ? DEMO_EDU_2023 : rawEdu2023;
+    const edu_values_2019_scaled = useDemoEducation ? DEMO_EDU_2019 : toNumbers(rawEdu2019);
+    const edu_values_2023_scaled = useDemoEducation ? DEMO_EDU_2023 : toNumbers(rawEdu2023);
 
     const occ_title = useDemoOccupation ? DEMO_OCC_TITLES : rawOccTitle;
-    const a_median_2019 = useDemoOccupation ? DEMO_MEDIAN_2019 : rawMedian2019;
-    const a_median_2023 = useDemoOccupation ? DEMO_MEDIAN_2023 : rawMedian2023;
+    const a_median_2019 = useDemoOccupation ? DEMO_MEDIAN_2019 : toNumbers(rawMedian2019);
+    const a_median_2023 = useDemoOccupation ? DEMO_MEDIAN_2023 : toNumbers(rawMedian2023);
 
-    const skill_data = useDemoSkills ? DEMO_SKILL_DATA : rawSkillData;
+    const skill_data = useDemoSkills ? DEMO_SKILL_DATA : rawSkillData.map((row) => toNumbers(row));
 
     const skillLabelsMain = [
       'Management occupations',
@@ -130,7 +146,7 @@ const ChartPage = () => {
         datasets: [
             {
                 label: 'Final Scores',
-                data: finalScores,
+                data: [...finalScores],
                 fill: true,
                 backgroundColor: 'rgba(255, 99, 132, 0.2)',
                 borderColor: 'rgb(255, 99, 132)',
@@ -153,12 +169,13 @@ const ChartPage = () => {
         ],
     };
 
+    const eduLabels = Array.isArray(edu_categories) ? edu_categories : [];
     const education = {
-        labels: edu_categories,
+        labels: eduLabels.length ? eduLabels : DEMO_EDU_CATEGORIES,
         datasets: [
             {
                 label: 'Jobs 2019',
-                data: edu_values_2019_scaled,
+                data: toNumbers(edu_values_2019_scaled).slice(0, eduLabels.length || 8).concat(new Array(Math.max(0, (eduLabels.length || 8) - edu_values_2019_scaled.length)).fill(0)).slice(0, eduLabels.length || 8),
                 fill: true,
                 backgroundColor: 'rgba(255, 99, 132, 0.2)',
                 borderColor: 'rgb(255, 99, 132)',
@@ -320,6 +337,7 @@ const occupationsData = {
         <div className="chartContainer" style={{width: '90vw'}}>
           <div className="chartCard mainRadarCard">
             <h3>Career fit: Final scores vs focused recommendation</h3>
+            {useDemoMainScores && <span className="chartBadge">Sample scores — complete the questionnaire for your results</span>}
             <Radar className="skills" style={{width: '100%', height: 'min(80vh, 520px)'}} data={skills} options={options} />
           </div>
           <div className="chartGrid">
@@ -339,6 +357,7 @@ const occupationsData = {
               <Radar className="skillChartData" style={{width: '100%', height: '320px'}} data={skillChartData} options={optionsSkills} />
             </div>
           </div>
+        </div>
         </div>
     );
 };
