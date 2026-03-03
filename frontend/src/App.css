@@ -135,18 +135,54 @@ input[type="range"]::-webkit-slider-thumb {
 .chartContainer{
   display: grid;
   grid-template-columns: 1fr;
-  gap: 80px;
-  margin: 20px;
-  width: '40vw';
-  height: '40vh';
+  gap: 24px;
+  margin: 20px 0;
 }
-.skills,.education,.occupationsData,.skillChartData{
+.chartContainer .mainRadarCard{
+  grid-column: 1 / -1;
+}
+.chartContainer .mainRadarCard .skills{
+  grid-column: 1 / -1;
+}
+.chartGrid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 20px;
+  margin-top: 8px;
+}
+.chartCard{
+  position: relative;
   background: rgba(255, 255, 255, 0.16);
   border-radius: 16px;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(7.1px);
   -webkit-backdrop-filter: blur(7.1px);
   border: 1px solid rgba(255, 255, 255, 0.66);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.chartCard h3{
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: inherit;
+}
+.chartBadge{
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 11px;
+  padding: 4px 8px;
+  background: rgba(100, 118, 99, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(100, 118, 99, 0.5);
+}
+.skills,.education,.occupationsData,.skillChartData{
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 8px;
 }
 
 /* .chartContainer {

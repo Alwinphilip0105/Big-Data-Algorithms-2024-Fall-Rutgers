@@ -5,9 +5,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from project_data_config import path_2023_33
+
 # Load the Excel file and clean the data
-file_path = 'project_data/2023-33/skills.xlsx'
-import pandas as pd
+file_path = path_2023_33('skills.xlsx')
 import matplotlib.pyplot as plt
 import numpy as np
 

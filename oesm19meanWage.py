@@ -1,9 +1,10 @@
 import pandas as pd
 
-# File paths for the 2019 and 2023 Excel files
-file_2019 = 'project_data/2019-29/oesm19nat/national_M2019_dl.xlsx'  # Use the correct path to your file
-file_2023 = 'project_data/2023-33/oesm23nat/national_M2023_dl.xlsx'  # Use the correct path to your file
-import pandas as pd
+from project_data_config import path_oesm_2019, path_oesm_2023
+
+# Wage files: oesm19nat and oesm23nat at project_data root
+file_2019 = path_oesm_2019('national_M2019_dl.xlsx')
+file_2023 = path_oesm_2023('national_M2023_dl.xlsx')
 import matplotlib.pyplot as plt
 
 # Reading the data from the Excel files

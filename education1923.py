@@ -2,11 +2,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-file_2019_new_path = 'project_data/2019-29/education.xlsx'
-file_2023_path = 'project_data/2023-33/education.xlsx'
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
+from project_data_config import path_2019_29, path_2023_33
+
+file_2019_new_path = path_2019_29('education.xlsx')
+file_2023_path = path_2023_33('education.xlsx')
 
 # Load the 2019 data (newly uploaded file)
 xls_2019_new = pd.ExcelFile(file_2019_new_path)

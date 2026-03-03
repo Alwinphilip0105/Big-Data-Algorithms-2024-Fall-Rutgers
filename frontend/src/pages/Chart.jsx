@@ -6,25 +6,67 @@ import '../App.css';
 
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
+// Demo data when backend/WebSocket doesn't provide chart data (e.g. no Python client connected)
+const DEMO_EDU_CATEGORIES = [
+    'Less than high school', 'High school diploma', 'Some college', "Bachelor's degree",
+    "Master's degree", "Doctoral degree", 'Professional degree', 'No degree'
+];
+const DEMO_EDU_2019 = [0.35, 0.52, 0.61, 0.78, 0.85, 0.92, 0.88, 0.45];
+const DEMO_EDU_2023 = [0.28, 0.48, 0.58, 0.82, 0.88, 0.95, 0.90, 0.50];
+
+const DEMO_OCC_TITLES = [
+    'Management', 'Business & financial', 'Computer & math', 'Architecture & engineering',
+    'Life & physical science', 'Community & social', 'Legal', 'Education & library', 'Arts & media'
+];
+const DEMO_MEDIAN_2019 = [0.72, 0.68, 0.85, 0.78, 0.75, 0.58, 0.88, 0.62, 0.55];
+const DEMO_MEDIAN_2023 = [0.78, 0.74, 0.92, 0.82, 0.80, 0.62, 0.90, 0.66, 0.60];
+
+const DEMO_SKILL_LABELS = ['Analysis', 'Communication', 'Leadership', 'Tech', 'Research', 'Teaching', 'Creativity', 'Problem-solving', 'Teamwork', 'Writing', 'Data', 'Planning', 'Customer service', 'Detail', 'Adaptability', 'Initiative'];
+const DEMO_SKILL_GROUPS = ['Management', 'Business', 'Technical'];
+const DEMO_SKILL_DATA = [
+    [0.7, 0.8, 0.9, 0.5, 0.6, 0.4, 0.5, 0.8, 0.85, 0.7, 0.6, 0.9, 0.5, 0.7, 0.75, 0.8],
+    [0.6, 0.9, 0.6, 0.4, 0.5, 0.3, 0.4, 0.7, 0.7, 0.85, 0.75, 0.8, 0.8, 0.85, 0.6, 0.7],
+    [0.4, 0.5, 0.4, 0.95, 0.9, 0.3, 0.6, 0.9, 0.6, 0.5, 0.95, 0.6, 0.4, 0.8, 0.7, 0.65],
+];
+
+function isMissingOrEmpty(arr, placeholder) {
+    if (!Array.isArray(arr) || arr.length === 0) return true;
+    if (placeholder === 'No Data') return arr.every((v) => v === 'No Data' || v == null);
+    return arr.every((v) => v === 0 || v == null);
+}
+
 const ChartPage = () => {
     const location = useLocation();
     const finalScores = location.state?.finalScores || new Array(22).fill(0); // Fallback to zeros if data is missing
 
-    const edu_categories = location.state?.edu_categories || new Array(8).fill('No Data');
-    const edu_values_2019_scaled = location.state?.edu_values_2019_scaled || new Array(8).fill(0);
-    const edu_values_2023_scaled = location.state?.edu_values_2023_scaled || new Array(8).fill(0);
-    // New variables
-    const occ_title = location.state?.occ_title || new Array(9).fill('No Data');
-    const a_median_2019 = location.state?.a_median_2019 || new Array(9).fill(0);
-    const a_median_2023 = location.state?.a_median_2023 || new Array(9).fill(0);
+    const rawEduCategories = location.state?.edu_categories || new Array(8).fill('No Data');
+    const rawEdu2019 = location.state?.edu_values_2019_scaled || new Array(8).fill(0);
+    const rawEdu2023 = location.state?.edu_values_2023_scaled || new Array(8).fill(0);
 
-    // Assuming these are 2D arrays and that skill_data is 3 sets of 16 skill values each
-    const occupational_groups = location.state?.occupational_groups || ["Group 1", "Group 2", "Group 3"];
-    const skill_data = location.state?.skill_data || [
-      new Array(16).fill(0),
-      new Array(16).fill(0),
-      new Array(16).fill(0)
+    const rawOccTitle = location.state?.occ_title || new Array(9).fill('No Data');
+    const rawMedian2019 = location.state?.a_median_2019 || new Array(9).fill(0);
+    const rawMedian2023 = location.state?.a_median_2023 || new Array(9).fill(0);
+
+    const occupational_groups = location.state?.occupational_groups || DEMO_SKILL_GROUPS;
+    const rawSkillData = location.state?.skill_data || [
+        new Array(16).fill(0),
+        new Array(16).fill(0),
+        new Array(16).fill(0),
     ];
+
+    const useDemoEducation = isMissingOrEmpty(rawEduCategories, 'No Data') || isMissingOrEmpty(rawEdu2019);
+    const useDemoOccupation = isMissingOrEmpty(rawOccTitle, 'No Data') || isMissingOrEmpty(rawMedian2019);
+    const useDemoSkills = rawSkillData.every((row) => isMissingOrEmpty(row));
+
+    const edu_categories = useDemoEducation ? DEMO_EDU_CATEGORIES : rawEduCategories;
+    const edu_values_2019_scaled = useDemoEducation ? DEMO_EDU_2019 : rawEdu2019;
+    const edu_values_2023_scaled = useDemoEducation ? DEMO_EDU_2023 : rawEdu2023;
+
+    const occ_title = useDemoOccupation ? DEMO_OCC_TITLES : rawOccTitle;
+    const a_median_2019 = useDemoOccupation ? DEMO_MEDIAN_2019 : rawMedian2019;
+    const a_median_2023 = useDemoOccupation ? DEMO_MEDIAN_2023 : rawMedian2023;
+
+    const skill_data = useDemoSkills ? DEMO_SKILL_DATA : rawSkillData;
 
     const skillLabelsMain = [
       'Management occupations',
@@ -73,7 +115,7 @@ const ChartPage = () => {
     const confidenceScore = useMemo(() => {
       if (rankedSuggestions.length === 0) return 0;
       const avg = rankedSuggestions.reduce((sum, item) => sum + item.score, 0) / rankedSuggestions.length;
-      return Math.round(avg);
+      return Math.min(100, Math.round(avg));
     }, [rankedSuggestions]);
 
     const focusedScores = useMemo(() => {
@@ -166,7 +208,7 @@ const occupationsData = {
         }
       ]
     };
-    const skillLabels = location.state?.skill_column || Array.from({ length: 16 }, (_, i) => `Skill ${i + 1}`);
+    const skillLabels = (location.state?.skill_column && location.state.skill_column.some((l) => l && l !== 'No Data')) ? location.state.skill_column : DEMO_SKILL_LABELS;
     
     const skillDatasets = skill_data.map((row, index) => {
       const colors = [
@@ -194,10 +236,21 @@ const occupationsData = {
       datasets: skillDatasets
     };
 
+    const radarScale = (suggestedMax = 1000) => ({
+        min: 0,
+        max: suggestedMax,
+        beginAtZero: true,
+        ticks: { stepSize: suggestedMax <= 1 ? 0.2 : suggestedMax / 5 },
+    });
+
     const options = {
         responsive: true,
         maintainAspectRatio: false,
+        scales: { r: radarScale(1000) },
     };
+    const optionsEducation = { ...options, scales: { r: radarScale(1) } };
+    const optionsOccupation = { ...options, scales: { r: radarScale(1) } };
+    const optionsSkills = { ...options, scales: { r: radarScale(1) } };
 
     return (
         <div className="chartBlock">
@@ -210,7 +263,7 @@ const occupationsData = {
           <div className="insightCard">
             <h4>Top Suggested Domain</h4>
             <p>{dominantSkill.label}</p>
-            <span>{Math.round(dominantSkill.score)} / 100</span>
+            <span>{Math.round(dominantSkill.score)} / 1000</span>
           </div>
           <div className="insightCard">
             <h4>Recommendation Confidence</h4>
@@ -258,19 +311,34 @@ const occupationsData = {
                 onClick={() => setSelectedIndex(item.index)}
               >
                 <span>{item.label}</span>
-                <strong>{Math.round(item.score)}</strong>
+                <strong>{Math.round(item.score)} / 1000</strong>
               </button>
             ))
           )}
         </div>
 
-        <div className="chartContainer" style={{width: '90vw', height: "90vh"}}>
-          <Radar className="skills" style={{width: '80vw', height: "80vh"}} data={skills} options={options} />
-          <Radar className="education" style={{width: '40vw', height: "40vh"}} data={education} options={options} />
-          <Radar className="occupationsData" style={{width: '40vw', height: "40vh"}} data={occupationsData} options={options} />
-          <Radar className="skillChartData" style={{width: '40vw', height: "40vh"}} data={skillChartData} options={options} />
-
+        <div className="chartContainer" style={{width: '90vw'}}>
+          <div className="chartCard mainRadarCard">
+            <h3>Career fit: Final scores vs focused recommendation</h3>
+            <Radar className="skills" style={{width: '100%', height: 'min(80vh, 520px)'}} data={skills} options={options} />
+          </div>
+          <div className="chartGrid">
+            <div className="chartCard">
+              <h3>Employment by education (2019 vs 2023)</h3>
+              {useDemoEducation && <span className="chartBadge">Sample data</span>}
+              <Radar className="education" style={{width: '100%', height: '320px'}} data={education} options={optionsEducation} />
             </div>
+            <div className="chartCard">
+              <h3>Median salary by occupation (2019 vs 2023)</h3>
+              {useDemoOccupation && <span className="chartBadge">Sample data</span>}
+              <Radar className="occupationsData" style={{width: '100%', height: '320px'}} data={occupationsData} options={optionsOccupation} />
+            </div>
+            <div className="chartCard">
+              <h3>Skills by group</h3>
+              {useDemoSkills && <span className="chartBadge">Sample data</span>}
+              <Radar className="skillChartData" style={{width: '100%', height: '320px'}} data={skillChartData} options={optionsSkills} />
+            </div>
+          </div>
         </div>
     );
 };
