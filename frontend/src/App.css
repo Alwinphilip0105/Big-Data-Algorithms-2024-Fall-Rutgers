@@ -36,8 +36,11 @@ input[type="range"]::-webkit-slider-thumb {
   background: #cddadf;
 }
 
-#ratingValue{
+.ratingValue, #ratingValue {
   font-size: 18px;
+  min-height: 1.5em;
+  margin: 10px 0 0;
+  display: block;
 }
 
 .btn{
@@ -146,9 +149,15 @@ input[type="range"]::-webkit-slider-thumb {
 }
 .chartGrid{
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
   margin-top: 8px;
+  align-items: start;
+}
+@media (max-width: 1000px) {
+  .chartGrid {
+    grid-template-columns: 1fr;
+  }
 }
 .chartCard{
   position: relative;
@@ -162,6 +171,7 @@ input[type="range"]::-webkit-slider-thumb {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  overflow: visible;
 }
 .chartCard h3{
   margin: 0;
@@ -178,6 +188,25 @@ input[type="range"]::-webkit-slider-thumb {
   background: rgba(100, 118, 99, 0.3);
   border-radius: 8px;
   border: 1px solid rgba(100, 118, 99, 0.5);
+}
+.chartWrapper {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  min-height: 240px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.chartGrid .chartWrapper {
+  height: 260px;
+  min-height: 220px;
+}
+.chartWrapperMain {
+  height: min(80vh, 520px);
+  min-height: 360px;
+}
+.chartWrapper canvas {
+  display: block;
 }
 .skills,.education,.occupationsData,.skillChartData{
   background: rgba(255, 255, 255, 0.08);

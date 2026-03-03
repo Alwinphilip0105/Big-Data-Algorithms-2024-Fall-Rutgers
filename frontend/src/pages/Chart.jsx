@@ -169,13 +169,18 @@ const ChartPage = () => {
         ],
     };
 
-    const eduLabels = Array.isArray(edu_categories) ? edu_categories : [];
+    const eduLabels = Array.isArray(edu_categories) && edu_categories.length > 0 ? edu_categories : DEMO_EDU_CATEGORIES;
+    const nEdu = eduLabels.length;
+    const edu2019 = toNumbers(edu_values_2019_scaled).slice(0, nEdu);
+    const edu2023 = toNumbers(edu_values_2023_scaled).slice(0, nEdu);
+    while (edu2019.length < nEdu) edu2019.push(0);
+    while (edu2023.length < nEdu) edu2023.push(0);
     const education = {
-        labels: eduLabels.length ? eduLabels : DEMO_EDU_CATEGORIES,
+        labels: eduLabels,
         datasets: [
             {
                 label: 'Jobs 2019',
-                data: toNumbers(edu_values_2019_scaled).slice(0, eduLabels.length || 8).concat(new Array(Math.max(0, (eduLabels.length || 8) - edu_values_2019_scaled.length)).fill(0)).slice(0, eduLabels.length || 8),
+                data: edu2019,
                 fill: true,
                 backgroundColor: 'rgba(255, 99, 132, 0.2)',
                 borderColor: 'rgb(255, 99, 132)',
@@ -186,7 +191,7 @@ const ChartPage = () => {
             },
             {
                 label: 'Jobs 2023',
-                data: edu_values_2023_scaled,
+                data: edu2023,
                 fill: true,
                 backgroundColor: 'rgba(8, 0, 225, 0.2)',
                 borderColor: 'rgb(8, 0, 225)',
@@ -198,12 +203,17 @@ const ChartPage = () => {
             
         ],
     };
-const occupationsData = {
+const nOcc = occ_title.length;
+    const occ2019 = toNumbers(a_median_2019).slice(0, nOcc);
+    const occ2023 = toNumbers(a_median_2023).slice(0, nOcc);
+    while (occ2019.length < nOcc) occ2019.push(0);
+    while (occ2023.length < nOcc) occ2023.push(0);
+    const occupationsData = {
       labels: occ_title,
       datasets: [
         {
           label: '2019 Median Salary',
-          data: a_median_2019,
+          data: occ2019,
           fill: true,
           backgroundColor: 'rgba(255, 206, 86, 0.2)',
           borderColor: 'rgb(255, 206, 86)',
@@ -214,7 +224,7 @@ const occupationsData = {
         },
         {
           label: '2023 Median Salary',
-          data: a_median_2023,
+          data: occ2023,
           fill: true,
           backgroundColor: 'rgba(54, 162, 235, 0.2)',
           borderColor: 'rgb(54, 162, 235)',
@@ -338,23 +348,31 @@ const occupationsData = {
           <div className="chartCard mainRadarCard">
             <h3>Career fit: Final scores vs focused recommendation</h3>
             {useDemoMainScores && <span className="chartBadge">Sample scores — complete the questionnaire for your results</span>}
-            <Radar className="skills" style={{width: '100%', height: 'min(80vh, 520px)'}} data={skills} options={options} />
+            <div className="chartWrapper chartWrapperMain">
+              <Radar data={skills} options={options} />
+            </div>
           </div>
           <div className="chartGrid">
             <div className="chartCard">
               <h3>Employment by education (2019 vs 2023)</h3>
               {useDemoEducation && <span className="chartBadge">Sample data</span>}
-              <Radar className="education" style={{width: '100%', height: '320px'}} data={education} options={optionsEducation} />
+              <div className="chartWrapper">
+                <Radar data={education} options={optionsEducation} />
+              </div>
             </div>
             <div className="chartCard">
               <h3>Median salary by occupation (2019 vs 2023)</h3>
               {useDemoOccupation && <span className="chartBadge">Sample data</span>}
-              <Radar className="occupationsData" style={{width: '100%', height: '320px'}} data={occupationsData} options={optionsOccupation} />
+              <div className="chartWrapper">
+                <Radar data={occupationsData} options={optionsOccupation} />
+              </div>
             </div>
             <div className="chartCard">
               <h3>Skills by group</h3>
               {useDemoSkills && <span className="chartBadge">Sample data</span>}
-              <Radar className="skillChartData" style={{width: '100%', height: '320px'}} data={skillChartData} options={optionsSkills} />
+              <div className="chartWrapper">
+                <Radar data={skillChartData} options={optionsSkills} />
+              </div>
             </div>
           </div>
         </div>

@@ -110,28 +110,34 @@ const Question = () => {
   };
   
 
+  const displayRating = Math.min(10, Math.max(0, Number(rating) || 0));
+
   return (
     <div className="questionContainer">
       <h2 id="question">{personalityTestQuestions[currentQuestionIndex].question}</h2>
       <div className="ratingContainer">
-        <br />
         <input
           id="ratingInput"
           type="range"
-          min="0"
-          max="10"
-          value={rating}
+          min={0}
+          max={10}
+          step={1}
+          value={displayRating}
           onChange={(e) => setRating(Number(e.target.value))}
+          aria-valuemin={0}
+          aria-valuemax={10}
+          aria-valuenow={displayRating}
         />
-        <br />
-        <span id="ratingValue">{rating}</span>
+        <p className="ratingValue" id="ratingValue">
+          Your rating: <strong>{displayRating}</strong> / 10
+        </p>
       </div>
       {currentQuestionIndex === personalityTestQuestions.length - 1 ? (
-        <button type="submit" className="btn" onClick={handleSubmit}>
+        <button type="button" className="btn" onClick={handleSubmit}>
           Submit
         </button>
       ) : (
-        <button className="btn" onClick={handleNextQuestion}>
+        <button type="button" className="btn" onClick={handleNextQuestion}>
           Next Question
         </button>
       )}
